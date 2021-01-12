@@ -15,7 +15,7 @@ const prefix = config.prefix;
 const aprefix = config.aprefix;
 
 async function main(nrOrd, message = null, channel = null, creator = null){
-    const uri = "mongodb+srv://Crroco:pass1234@cluster0.ibtvk.mongodb.net/<Copiuta>?retryWrites=true&w=majority";
+    const uri = "mongodb+srv://<user>:<password>@cluster0.ibtvk.mongodb.net/<db>?retryWrites=true&w=majority";
  
 
     const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
