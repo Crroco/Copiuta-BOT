@@ -15,7 +15,7 @@ const prefix = config.prefix;
 const aprefix = config.aprefix;
 
 async function main(nrOrd, message = null, channel = null, creator = null){
-    const uri = "mongodb+srv://<user>:<password>@cluster0.ibtvk.mongodb.net/<db>?retryWrites=true&w=majority";
+    const uri = "mongodb+srv://<user>:<password>cluster/<db>?retryWrites=true&w=majority";
  
 
     const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -26,7 +26,9 @@ async function main(nrOrd, message = null, channel = null, creator = null){
  
         // Make the appropriate DB calls
         // Modificari pt baza de date
-        message = message.toLowerCase();
+        if(message != null)
+            message = message.toLowerCase();
+
         if(nrOrd == -1){
             if(message.startsWith(`addcoll`)){
                 message = message.slice(8);
@@ -98,7 +100,7 @@ async function main(nrOrd, message = null, channel = null, creator = null){
         }
         //comanda help
         else if(nrOrd == 0){
-            channel.send(`Comenzile care pot fi folosite sunt: \n${prefix}help - pentru a vedea comenzile \n${prefix}add nume_materie nume_formula formula \n${prefix}up nume_materie nume_formula formula noua - pentru a schimba continutul unei materii\n${prefix}nume_materie nume_formula - pentru a afla formula cautata \n${prefix}all nume_materie - pentru a vedea toate formulele disponibile pentru acea formula(comanda este inceata si probabil va fi scoasa) \nNumele unei materii repr primele 3 litere din numele complet. De ex: rom - Romana, mat - Mate, spo - Sport`);
+            channel.send(`Comenzile care pot fi folosite sunt: \n${prefix}help - pentru a vedea comenzile \n${prefix}add nume_materie nume_formula formula \n${prefix}up nume_materie nume_formula formula noua - pentru a schimba continutul unei materii\n${prefix}nume_materie nume_formula - pentru a afla formula cautata \n${prefix}all nume_materie - pentru a vedea toate formulele disponibile pentru acea formula(comanda este inceata si probabil va fi scoasa) \n${prefix}collection - pentru vedea materiile disponibile(mesajele vin mai greu, posibil sa o scot daca vor fi buguri) \nNumele unei materii repr primele 3 litere din numele complet. De ex: rom - Romana, mat - Mate, spo - Sport`);
             if(channel == `311383202885271563`)
             channel.send(`Comenzile bonus sunt: \n${aprefix}addcoll nume_colectie - pentru a adauga o colectie noua \n${aprefix}delcoll nume_colectie - pentru a sterge o colectie \n${aprefix}cckcoll - pentru a vedea toate colectiile valabile(comanda este inceata) \n${aprefix}delete - pentru a sterge cosul de gunoi`);
         }
@@ -242,6 +244,14 @@ async function main(nrOrd, message = null, channel = null, creator = null){
                 else channel.send(`Nu exista formula ${nume_formula} pentru materia ${materie}`);
             }
         }
+        ///afisez lista cu materii
+        else if(nrOrd == 5){
+            let data = await client.db("Copiuta").listCollections().toArray();
+            for(let i = 0; i < data.length; ++i){
+                if(data[i].name.toLowerCase() != `gunoi`)
+                channel.send(`${data[i].name}`);
+            }
+        }
 
     } catch (e) {
         console.error(e);
@@ -269,6 +279,8 @@ bot.on("message", (message) => {
         main(2, message.content.slice(6), message.author);
     else if(message.cleanContent.startsWith(`${prefix}up`))
         main(4, message.content.slice(5), message.channel);
+    else if(message.content == `${prefix}collections`)
+        main(5, message.content.slice(2), message.author);
     else if(message.content.startsWith(`${prefix}`))
         main(3, message.content.slice(2), message.channel), message.author.tag;
 })
